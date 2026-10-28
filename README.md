@@ -29,6 +29,7 @@ research. Plain Markdown: nothing to install.
 | `.claude/agents/` | 10 reviewer personas + the scout, as Claude Code agent types (own model, own tools) |
 | `personas/README.md` | The lens table: which persona to pick for which change |
 | `templates/` | The context pack, an agent brief and the board index, ready to copy |
+| `CLAUDE.md` + `.claude/hooks/confine.py` | Keeps Claude and every board agent inside the repo (no other drives, shares or AppData); `tests/confine_test.py` proves it |
 
 ## How to use it (Claude Code or any agent tool)
 

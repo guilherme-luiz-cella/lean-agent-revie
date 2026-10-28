@@ -1,0 +1,12 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Edit|Write|Glob|Grep|Bash|NotebookEdit",
+        "hooks": [
+          { "type": "command", "command": "py .claude/hooks/confine.py" }
+        ]
+      }
+    ]
+  }
+}
