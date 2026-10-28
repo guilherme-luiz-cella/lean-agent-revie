@@ -1,5 +1,5 @@
 """Checks .claude/hooks/confine.py: outside the repo is blocked, normal work passes.
-    python tests/confine_test.py
+    py tests/confine_test.py
 """
 import json, os, subprocess, sys
 
@@ -20,6 +20,9 @@ CASES = [
     ("Bash", {"command": "type \\\\servidor\\share\\a.txt"}, True),
     ("Bash", {"command": "ls //p/Projetos"}, True),
     ("Bash", {"command": "Get-Content $env:APPDATA\\x"}, True),
+    ("PowerShell", {"command": "git status"}, False),
+    ("PowerShell", {"command": "Get-ChildItem P:\\"}, True),
+    ("PowerShell", {"command": "Get-Content $env:APPDATA\\x"}, True),
 ]
 fails = []
 for tool, ti, want in CASES:
@@ -27,5 +30,13 @@ for tool, ti, want in CASES:
                        capture_output=True, text=True, env=dict(os.environ, CLAUDE_PROJECT_DIR=ROOT))
     if (r.returncode == 2) != want:
         fails.append(f"{'should block' if want else 'should allow'}: {tool} {ti}")
-print("\n".join(fails) if fails else f"OK: {len(CASES)} cases")
+
+# The hook must work from any folder (a relative path broke it after a cd) and cover PowerShell.
+with open(os.path.join(ROOT, ".claude", "settings.json"), encoding="utf-8") as f:
+    hook = json.load(f)["hooks"]["PreToolUse"][0]
+if "$CLAUDE_PROJECT_DIR" not in hook["hooks"][0]["command"]:
+    fails.append("settings.json: hook path must start with $CLAUDE_PROJECT_DIR")
+if "PowerShell" not in hook["matcher"].split("|"):
+    fails.append("settings.json: matcher must include PowerShell")
+print("\n".join(fails) if fails else f"OK: {len(CASES)} cases + settings")
 sys.exit(1 if fails else 0)

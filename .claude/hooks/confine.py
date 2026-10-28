@@ -4,6 +4,7 @@ Blocks (exit code 2, reason on stderr):
 - shell commands that mention another drive (D: to Z:), a network share (\\\\server), the Git Bash
   form of a drive (//p/) or AppData.
 Copy it with .claude/settings.json into any repo that holds or sits near personal data.
+Bash and PowerShell commands get the same check.
 Tested by tests/confine_test.py. A guard rail, not a sandbox: obfuscated commands are not caught.
 """
 import json, os, re, sys
@@ -18,7 +19,7 @@ def main():
     d = json.load(sys.stdin)
     root = os.path.normcase(os.path.realpath(os.environ.get("CLAUDE_PROJECT_DIR") or d.get("cwd") or "."))
     tool, ti = d.get("tool_name", ""), d.get("tool_input") or {}
-    if tool == "Bash":
+    if tool in ("Bash", "PowerShell"):
         if SHELL_BLOCK.search(ti.get("command", "")):
             block("the command mentions another drive, a network share or AppData.")
         return
