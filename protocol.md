@@ -13,7 +13,7 @@
 
 ```
 board/
-  pack.md          context for the round (main agent): repo map, excerpts, open questions, FGL card
+  pack.md          context for the round (scout): repo map, verbatim excerpts, checked facts, FGL card
   INDEX.md         one line per entry, <= 20 tokens, with an address (main agent only)
   R1/security.md   one file per persona per round, in FGL (that persona only)
   decisions.md     the owner's decisions (main agent)
