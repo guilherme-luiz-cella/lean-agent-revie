@@ -1,6 +1,7 @@
 # Personas: one lens each, no overlap
 
-The agent definitions live in `../.claude/agents/` (one file per persona, plus `scout`).
+The agent definitions live in `../.claude/agents/` (one file per persona, plus `scout`, which reads
+for everyone, and `judge`, which checks every entry; neither is a lens).
 
 Research: diverse lenses beat more of the same (2 diverse agents can match 16 identical ones), and
 personas drift toward the same answers unless their *job and evidence* differ. So each persona below

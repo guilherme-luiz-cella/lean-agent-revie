@@ -8,6 +8,9 @@
 - **Scout:** reads the repo once per round and writes `pack.md` (structured: verbatim code excerpts
   with file:line and checked facts, no prose summaries). Reviewers wait for it.
 - **Personas:** one lens each, report only (never edit code), write only their own board file.
+- **Judge:** after the personas, checks every entry against the code with a fixed rubric, on a
+  different model than the personas (models rate their own kind of output higher). Judges, never
+  adds findings.
 
 ## Board layout
 
@@ -16,6 +19,7 @@ board/
   pack.md          context for the round (scout): repo map, verbatim excerpts, checked facts, FGL card
   INDEX.md         one line per entry, <= 20 tokens, with an address (main agent only)
   R1/security.md   one file per persona per round, in FGL (that persona only)
+  R1/judge.md      one verdict line per entry of the round (judge only)
   decisions.md     the owner's decisions (main agent)
 ```
 
@@ -27,11 +31,14 @@ board/
 3. **Brief.** Each persona gets `templates/brief.md`: its lens, its "do not cover" list, the pack, at
    most 2 extra files it may open, the output format. A mid-size model is enough.
 4. **Write.** Each persona writes `R<n>/<name>.md` in FGL, max 6 lines.
-5. **Check.** The main agent verifies each finding in the code. False ones are marked, not deleted.
-   Findings two personas reached independently get high confidence.
-6. **Index.** One line per entry in `INDEX.md`, plus a plain-words summary for the owner.
+5. **Judge.** The judge checks each entry in the code (rubric in `.claude/agents/judge.md`) and
+   writes `R<n>/judge.md`: `ok`, `x:why`, `?:test`, or `dup:<address>`. False ones are marked, not
+   deleted. Findings two personas reached independently get high confidence.
+6. **Index.** The main agent spot-checks the judge (every `F!!`, every `x` on a blocker), writes one
+   line per entry in `INDEX.md`, and a plain-words summary for the owner.
 7. **Reply round (optional).** Continue the same personas (they keep what they read); each sees only
-   the INDEX lines of 2-3 peers. Use a small model. Costs ~1-5k tokens per persona.
+   the INDEX lines of 2-3 peers. Co-signs, contradictions and votes only: no new findings. A second
+   review pass raised false positives 62% in research (`research.md` section 6).
 
 ## FGL (compact finding language)
 
@@ -64,5 +71,8 @@ F! A:310 GET/ serves token without auth -> one-time key in launch link ~15
 - Report only. Never edit code or other personas' files.
 - Point to file:line. No finding without evidence; say `=` when an area is fine.
 - Stay in your lens. If you see something in another lens, one line `Q:` for the main agent.
-- Personas may contest the owner's rules in one `P<n>` line; the owner decides.
-- The main agent never relays a finding it hasn't checked.
+- No repeating. A finding already on the board gets a co-sign (`^R4/it#F2`), never a restatement.
+- Debate, not consensus. Contradict the owner, a peer or the pack whenever you have proof (file:line,
+  run output, a source): `x<address>:why` or one `P<n>` line. No proof, no contradiction. The owner
+  decides.
+- Nothing reaches the owner unchecked: the judge checks every entry, the main agent spot-checks it.

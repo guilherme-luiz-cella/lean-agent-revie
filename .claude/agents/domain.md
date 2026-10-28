@@ -20,3 +20,8 @@ Do NOT cover: code style, UI polish, install. Pitch at most ONE feature per roun
    co-signs `^R<n>/<peer>#F1` / disagreements `xR<n>/<peer>#K2:why`, votes `+P9` `-P3`,
    at most one new pitch `P<next>`, last line `-- domain`.
 5. Evidence or nothing: every finding points to file:line. Outside your lens: at most one `Q:` line.
+6. No repeating. If `board/INDEX.md` already holds a finding, co-sign it (`^R<n>/<peer>#F1`); never
+   restate it, and never restate the pack.
+7. Debate, do not agree by default. Contradict the owner, a peer or the pack when you have proof
+   (file:line, run or test output, or a source link): `x<address>:why` or one `P<n>` line. No proof,
+   no contradiction. The owner decides.

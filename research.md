@@ -81,3 +81,46 @@ app or tests themselves. See `.claude/agents/scout.md`.
 
 Forks share the parent's view, so they are cheap but not independent: good for parallel work, poor for
 review, where independent eyes are the point.
+
+## 6. Open questions, second pass (2026-10-28)
+
+What we had not checked: is the scout's saving real, are reply rounds worth it, does a cheaper model
+save what the price says, and how often do review findings turn out false.
+
+- **A digest pass saves about what we estimated, quality unmeasured.** Five reviewers on one 16k-token
+  diff: naive 80k input tokens ($1.32); a "librarian" pass writing a JSON digest first, 21k ($0.49);
+  caching the diff as a shared system prefix, $0.45, but only on a warm series (cold: $1.32 again).
+  The author did not check whether the digest lost findings. Single PR.
+  [Stop paying for the same tokens twice](https://dev.to/andreagriffiths11/stop-paying-for-the-same-tokens-twice-geh)
+- **Cost is prefix x turns, not just files read.** 24 reviewers on a 28-file PR: a purpose-built agent
+  type with a small tool allowlist cut each reviewer's prefix from ~81k to ~23k tokens (unused skill
+  catalogs and tool schemas), total cost -45%. A cheaper model, priced 2.5x lower, saved 9%: it took
+  ~2.2x the turns. A newer model cost 2.7x but caught a blocker the cheap run missed. The same setup
+  three days later cost 3.5x. "Anything that grows the carried context has to remove turns to break
+  even." [What an AI code review costs](https://blog.traderspost.io/article/what-an-ai-code-review-costs)
+- **A second review round adds noise.** 30 artifacts, 150 injected errors: single-pass review F1 0.376
+  beat every multi-turn variant (best 0.303, p < 0.001). Extra rounds raised recall by 0.08 but
+  false positives by 62% (8.5 vs 5.2; precision 0.30 to 0.20): reviewers invent findings once the real
+  ones are found, and drift to critiquing the conversation instead of the artifact.
+  [More Rounds, More Noise, arXiv 2603.16244](https://arxiv.org/abs/2603.16244)
+- **Split finding from checking.** Practice reports keep generation and verification in separate
+  passes, with the checker able to read the whole codebase; a finder-plus-verifier setup cut one
+  pipeline's false positives 560 to 64. Missing visibility into other files caused ~10% of false
+  positives in one field study. Vendor and single-case numbers, not benchmarks.
+  [Reviewate](https://reviewate-website.pages.dev/blog/reduce-false-positives-ai-code-review),
+  [Augment](https://www.augmentcode.com/guides/ai-code-review-accuracy)
+- **Caching across our reviewers is unlikely.** Prompt caches match a byte-exact prefix. Each persona
+  has its own system prompt, so the pack, sent after it, is not shared. Forks share the parent's cache
+  but not its independence (section 5). Resuming a subagent can miss the cache on the first message.
+  Unofficial sources only. [finisky](https://finisky.github.io/en/claude-code-fork-cache/),
+  [cache miss on resume](https://claudeissues.com/issue/44724-subagent-cache-miss-on-first-sendmessage-resume-cache-read-0)
+
+**What this means for the protocol (not yet applied, owner decides):**
+1. The scout is supported on tokens; whether the pack loses findings is still untested anywhere. Our
+   next round should measure it: same change, same personas, with and without the pack, count
+   checked findings.
+2. Count turns, not just tokens read. Personas already have small tool lists; keep them small.
+3. "Use a small model" for replies may not save much if it takes more turns. Measure before adopting.
+4. Reply rounds (protocol step 7) risk invented findings. Keep them to co-signs and votes on existing
+   entries; no new findings in a reply round, or drop the step. Our own data agree: "more rounds on
+   the same code find less" (case-study.md).
